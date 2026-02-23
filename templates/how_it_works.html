@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How It Works | PulmoGuard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='how_it_works.css') }}">
+</head>
+
+<body>
+
+    <!-- Top Navbar -->
+    <nav class="navbar">
+        <a href="/" class="nav-brand">Pulmo<span>Guard</span></a>
+        <a href="/" class="nav-back-btn">
+            <i class="fa-solid fa-arrow-left"></i> Back to Home
+        </a>
+    </nav>
+
+    <!-- Hero Banner -->
+    <header class="hero-banner">
+        <div class="hero-content">
+            <div class="hero-badge"><i class="fa-solid fa-flask-vial"></i> Technical Overview</div>
+            <h1>How <span>PulmoGuard</span> Works</h1>
+            <p>A complete look at the machine learning pipeline powering lung cancer risk prediction — from raw data to
+                live results.</p>
+        </div>
+    </header>
+
+    <main class="page-container">
+
+        <!-- Pipeline Steps -->
+        <section class="section">
+            <h2 class="section-title"><i class="fa-solid fa-diagram-project"></i> ML Pipeline Overview</h2>
+            <div class="pipeline-grid">
+                <div class="pipeline-step">
+                    <div class="step-number">01</div>
+                    <div class="step-icon"><i class="fa-solid fa-database"></i></div>
+                    <h3>Data Collection</h3>
+                    <p>The model is trained on a structured CSV dataset (<code>lung_cancer_dataset.csv</code>)
+                        containing 15 clinical and lifestyle attributes encoded as binary values (0 or 1) along with the
+                        target <code>LUNG_CANCER</code> label.</p>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">02</div>
+                    <div class="step-icon"><i class="fa-solid fa-broom"></i></div>
+                    <h3>Preprocessing</h3>
+                    <p>The dataset is checked for missing values using <code>df.isnull().sum()</code>. Any missing
+                        entries are filled with <code>0</code> using <code>df.fillna(0)</code>. No encoding was needed
+                        since the dataset already uses binary numeric values.</p>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">03</div>
+                    <div class="step-icon"><i class="fa-solid fa-scissors"></i></div>
+                    <h3>Feature / Target Split</h3>
+                    <p>All columns except <code>LUNG_CANCER</code> form the feature matrix <strong>X</strong> (15
+                        features). The <code>LUNG_CANCER</code> column becomes the target vector <strong>y</strong>.
+                        This separates what the model learns <em>from</em> and what it tries to <em>predict</em>.</p>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">04</div>
+                    <div class="step-icon"><i class="fa-solid fa-shuffle"></i></div>
+                    <h3>Train / Test Split</h3>
+                    <p>Data is split using <code>train_test_split(X, y, test_size=0.2, random_state=42)</code>. This
+                        reserves <strong>80%</strong> for training and <strong>20%</strong> for testing, with a fixed
+                        <code>random_state=42</code> for reproducibility.</p>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">05</div>
+                    <div class="step-icon"><i class="fa-solid fa-brain"></i></div>
+                    <h3>Model Training</h3>
+                    <p>A <strong>Logistic Regression</strong> classifier from <code>scikit-learn</code> is trained with
+                        <code>max_iter=1000</code> to ensure convergence. Logistic Regression is ideal here — it outputs
+                        a probability (0–100%) between two classes, making it perfect for binary clinical
+                        classification.</p>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">06</div>
+                    <div class="step-icon"><i class="fa-solid fa-chart-bar"></i></div>
+                    <h3>Evaluation</h3>
+                    <p>The trained model is evaluated using <code>accuracy_score</code> and a full
+                        <code>classification_report</code> on the test set, covering <strong>Precision</strong>,
+                        <strong>Recall</strong>, and the <strong>F1-Score</strong> for both classes.</p>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">07</div>
+                    <div class="step-icon"><i class="fa-solid fa-floppy-disk"></i></div>
+                    <h3>Model Serialization</h3>
+                    <p>The trained model object is serialized to disk as <code>lung_model.pkl</code> using Python's
+                        <code>joblib.dump()</code>. This allows the model to be loaded once at server startup, avoiding
+                        costly re-training on every prediction request.</p>
+                </div>
+                <div class="pipeline-step">
+                    <div class="step-number">08</div>
+                    <div class="step-icon"><i class="fa-solid fa-server"></i></div>
+                    <h3>Live Prediction (Flask API)</h3>
+                    <p>The Flask backend loads <code>lung_model.pkl</code> on startup via <code>joblib.load()</code>.
+                        When a user submits the form, a <strong>POST /predict</strong> API call sends the 15 values as
+                        JSON. The server builds a named Pandas DataFrame and runs <code>model.predict()</code> +
+                        <code>model.predict_proba()</code> to return the risk class and confidence percentage.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture Section -->
+        <section class="section">
+            <h2 class="section-title"><i class="fa-solid fa-layer-group"></i> System Architecture</h2>
+            <div class="arch-card">
+                <div class="arch-flow">
+                    <div class="arch-box user-box"><i class="fa-solid fa-user"></i><span>User Browser</span></div>
+                    <div class="arch-arrow"><i class="fa-solid fa-arrow-right"></i><small>HTML Form (15 inputs)</small>
+                    </div>
+                    <div class="arch-box js-box"><i class="fa-brands fa-js"></i><span>JavaScript (fetch)</span></div>
+                    <div class="arch-arrow"><i class="fa-solid fa-arrow-right"></i><small>POST /predict JSON</small>
+                    </div>
+                    <div class="arch-box flask-box"><i class="fa-solid fa-server"></i><span>Flask API (Python)</span>
+                    </div>
+                    <div class="arch-arrow"><i class="fa-solid fa-arrow-right"></i><small>predict(DataFrame)</small>
+                    </div>
+                    <div class="arch-box model-box"><i class="fa-solid fa-brain"></i><span>lung_model.pkl</span></div>
+                </div>
+                <div class="arch-return">
+                    <i class="fa-solid fa-arrow-up"></i>
+                    <small>Returns <code>{"prediction": 0/1, "confidence": 98.5%}</code> back to UI modal</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="section">
+            <h2 class="section-title"><i class="fa-solid fa-list-check"></i> Input Features Used</h2>
+            <p class="section-desc">The model uses <strong>15 clinical and lifestyle features</strong> — all binary
+                encoded (1 = Yes / Male, 0 = No / Female):</p>
+            <div class="features-table-wrapper">
+                <table class="features-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Feature</th>
+                            <th>CSV Column</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Gender</td>
+                            <td><code>GENDER</code></td>
+                            <td>Patient sex (Male = 1, Female = 0)</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Age</td>
+                            <td><code>AGE</code></td>
+                            <td>Patient's age in years (numeric)</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Smoking</td>
+                            <td><code>SMOKING</code></td>
+                            <td>Active smoking history</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>Yellow Fingers</td>
+                            <td><code>YELLOW_FINGERS</code></td>
+                            <td>Presence of yellowing on fingers</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>Anxiety</td>
+                            <td><code>ANXIETY</code></td>
+                            <td>Chronic anxiety symptoms</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>Peer Pressure</td>
+                            <td><code>PEER_PRESSURE</code></td>
+                            <td>Influence by peer smoking habits</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>Chronic Disease</td>
+                            <td><code>CHRONIC_DISEASE</code></td>
+                            <td>Pre-existing chronic illness</td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>Fatigue</td>
+                            <td><code>FATIGUE</code></td>
+                            <td>Persistent fatigue or tiredness</td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td>Allergy</td>
+                            <td><code>ALLERGY</code></td>
+                            <td>Known respiratory/other allergies</td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>Wheezing</td>
+                            <td><code>WHEEZING</code></td>
+                            <td>Presence of wheezing sounds</td>
+                        </tr>
+                        <tr>
+                            <td>11</td>
+                            <td>Alcohol</td>
+                            <td><code>ALCOHOL</code></td>
+                            <td>Regular alcohol consumption</td>
+                        </tr>
+                        <tr>
+                            <td>12</td>
+                            <td>Coughing</td>
+                            <td><code>COUGHING</code></td>
+                            <td>Persistent coughing episodes</td>
+                        </tr>
+                        <tr>
+                            <td>13</td>
+                            <td>Shortness of Breath</td>
+                            <td><code>SHORTNESS_OF_BREATH</code></td>
+                            <td>Frequent breathlessness</td>
+                        </tr>
+                        <tr>
+                            <td>14</td>
+                            <td>Swallowing Difficulty</td>
+                            <td><code>SWALLOWING_DIFFICULTY</code></td>
+                            <td>Difficulty or pain while swallowing</td>
+                        </tr>
+                        <tr>
+                            <td>15</td>
+                            <td>Chest Pain</td>
+                            <td><code>CHEST_PAIN</code></td>
+                            <td>Recurrent chest discomfort or pain</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Tech Stack -->
+        <section class="section">
+            <h2 class="section-title"><i class="fa-solid fa-code"></i> Technology Stack</h2>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <i class="fa-brands fa-python tech-icon python"></i>
+                    <h4>Python 3</h4>
+                    <p>Core programming language for all ML and backend logic.</p>
+                </div>
+                <div class="tech-card">
+                    <i class="fa-solid fa-flask tech-icon flask"></i>
+                    <h4>Flask</h4>
+                    <p>Lightweight WSGI web framework serving HTML templates and REST API endpoints.</p>
+                </div>
+                <div class="tech-card">
+                    <i class="fa-solid fa-microchip tech-icon sklearn"></i>
+                    <h4>scikit-learn</h4>
+                    <p>Provides <code>LogisticRegression</code>, <code>train_test_split</code>, and
+                        <code>accuracy_score</code>.</p>
+                </div>
+                <div class="tech-card">
+                    <i class="fa-solid fa-table tech-icon pandas"></i>
+                    <h4>Pandas & NumPy</h4>
+                    <p>Used for CSV loading, preprocessing, and constructing named feature DataFrames for prediction.
+                    </p>
+                </div>
+                <div class="tech-card">
+                    <i class="fa-solid fa-box-archive tech-icon joblib"></i>
+                    <h4>Joblib</h4>
+                    <p>Serializes the trained model to <code>lung_model.pkl</code> for persistent loading in production.
+                    </p>
+                </div>
+                <div class="tech-card">
+                    <i class="fa-solid fa-globe tech-icon web"></i>
+                    <h4>HTML / CSS / JS</h4>
+                    <p>Pure vanilla frontend — no frameworks. The UI communicates with Flask via the
+                        <code>fetch()</code> API.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer-card">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <div>
+                <strong>Medical Disclaimer</strong>
+                <p>PulmoGuard is a research-grade ML demonstration tool. Predictions are based on statistical patterns
+                    and should <strong>not</strong> replace professional clinical diagnosis. Always consult a licensed
+                    healthcare provider.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer">
+        <p>PulmoGuard &copy; 2026 &mdash; Built with <i class="fa-solid fa-heart" style="color:#ef4444"></i> using
+            Python, Flask &amp; scikit-learn</p>
+    </footer>
+
+</body>
+
+</html>
