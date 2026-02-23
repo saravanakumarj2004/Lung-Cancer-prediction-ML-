@@ -27,8 +27,14 @@ def predict():
     try:
         data = request.json
         
-        # Features should be strictly in this order to match testing
-        features = [
+        # Build a named DataFrame exactly as the model was trained — suppresses sklearn warning
+        FEATURE_COLUMNS = [
+            'GENDER', 'AGE', 'SMOKING', 'YELLOW_FINGERS', 'ANXIETY',
+            'PEER_PRESSURE', 'CHRONIC_DISEASE', 'FATIGUE', 'ALLERGY',
+            'WHEEZING', 'ALCOHOL', 'COUGHING',
+            'SHORTNESS_OF_BREATH', 'SWALLOWING_DIFFICULTY', 'CHEST_PAIN'
+        ]
+        feature_values = [
             int(data.get('Gender', 0)),
             int(data.get('Age', 0)),
             int(data.get('Smoking', 0)),
@@ -45,9 +51,8 @@ def predict():
             int(data.get('Swallowing_Difficulty', 0)),
             int(data.get('Chest_pain', 0))
         ]
-        
-        input_data = np.array([features])
-        
+        input_data = pd.DataFrame([feature_values], columns=FEATURE_COLUMNS)
+
         # Determine Prediction
         prediction = model.predict(input_data)[0]
         
